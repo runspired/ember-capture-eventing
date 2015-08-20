@@ -136,7 +136,7 @@ export default Object.extend({
    @since 1.7.0
    @private
    */
-  canDispatchToEventManager: true,
+  canDispatchToEventManager: false,
 
   /**
    Enables capturing of events immediately instead of during bubble
@@ -277,9 +277,8 @@ export default Object.extend({
   setupCaptureHandler(viewRegistry, rootElement, event, eventName, eventWalker) {
     let self = this;
 
-    function didFindId(evt, triggeringManager, handlers) {
+    function didFindId(evt, handlers) {
       let view = viewRegistry[this.id];
-      let result = true;
 
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
 
@@ -294,13 +293,7 @@ export default Object.extend({
         }
       }
 
-      if (manager && manager !== triggeringManager) {
-        result = self._dispatchEvent(manager, evt, eventName, view);
-      } else if (view) {
-        result = self._bubbleEvent(view, evt, eventName);
-      }
-
-      return result;
+      return view ? self._bubbleEvent(view, evt, eventName) : true;
     }
 
     function didFindAction(evt, handlers) {
@@ -422,7 +415,7 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
       if (node) {
         event.currentTarget = node[1];
         if (node[0] === 'id') {
-          result = idHandler.call(node[1], event, null, handlers);
+          result = idHandler.call(node[1], event, handlers);
         } else {
           result = actionHandler.call(node[1], event, handlers);
         }
