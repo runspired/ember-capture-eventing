@@ -276,7 +276,7 @@ export default Object.extend({
    @param eventWalker an instance of a walker used to find the closest action or view element
    */
   setupCaptureHandler(viewRegistry, rootElement, event, eventName, eventWalker) {
-    let self = this;
+    let dispatcher = this;
 
     function didFindId(evt, handlers) {
       let view = viewRegistry[this.id];
@@ -287,7 +287,7 @@ export default Object.extend({
         handlers.push(['id', this]);
       }
 
-      return view ? self._bubbleEvent(view, evt, eventName) : true;
+      return view ? dispatcher._bubbleEvent(view, evt, eventName) : true;
     }
 
     function didFindAction(evt, handlers) {
