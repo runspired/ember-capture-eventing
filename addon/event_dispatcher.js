@@ -4,6 +4,7 @@
  */
 import Ember from 'ember';
 import jQuery from 'jquery';
+import symbol from './ember-internals/symbol';
 
 const {
   assign,
