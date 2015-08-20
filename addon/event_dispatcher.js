@@ -34,18 +34,6 @@ const ActionManager = Ember.__loader.require('ember-views/system/action_manager'
 export default Object.extend({
 
   /**
-   Whether or not to cache handler paths on the element
-   when `useCapture` is also true.
-
-   This needs to be replaced by a feature flag.
-
-   @private
-   @type {boolean}
-   */
-  useFastPaths: true,
-
-
-  /**
    The set of events names (and associated handler function names) to be setup
    and dispatched by the `EventDispatcher`. Modifications to this list can be done
    at setup time, generally via the `Ember.Application.customEvents` hash.
@@ -296,7 +284,7 @@ export default Object.extend({
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
 
       // collect handler
-      if (useFastPaths && handlers) {
+      if (handlers) {
         // TODO this logic needs pulled out of _dispatchEvent and _bubbleEvent
         // TODO and we should collect the actual handler, not just the element
         if (manager[eventName] && typeof manager[eventName] === 'function') {
@@ -332,7 +320,7 @@ export default Object.extend({
         if (action && action.eventName === eventName) {
           // collect handler
           // TODO this should collect the actual handler instead
-          if (useFastPaths && handlers) {
+          if (handlers) {
             handlers.push(['action', this]);
           }
 
@@ -341,7 +329,7 @@ export default Object.extend({
       }
     }
 
-    let filterFn = filterCaptureFunction(didFindId, didFindAction, eventWalker, this.get('useFastPaths'));
+    let filterFn = filterCaptureFunction(didFindId, didFindAction, eventWalker);
     this._handlers.push({ event: event, method: filterFn });
     rootElement.addEventListener(event, filterFn, true);
   },
@@ -400,7 +388,7 @@ export default Object.extend({
 
 
 
-function filterCaptureFunction(eventName, idHandler, actionHandler, walker, useFastPaths) {
+function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
   return function(e) {
     // normalize the event object
     // this also let's us set currentTarget correctly
@@ -411,7 +399,7 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker, useF
     let handlers;
 
     // trigger from cached handlers
-    if (useFastPaths && element._handlers && element._handlers[eventName]) {
+    if (element._handlers && element._handlers[eventName]) {
       element._handlers[eventName].forEach((handler) => {
         event.currentTarget = handler[1];
       if (handler[0] === 'id') {
@@ -424,10 +412,9 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker, useF
 
     // collect and trigger handlers
   } else {
-    if (useFastPaths) {
-      element._handlers = element._handlers || {};
-      handlers = element._handlers[eventName] = element._handlers[eventName] || [];
-    }
+
+    element._handlers = element._handlers || {};
+    handlers = element._handlers[eventName] = element._handlers[eventName] || [];
 
     let node;
     do {
