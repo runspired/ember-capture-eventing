@@ -285,7 +285,7 @@ export default Object.extend({
    @param {String} eventName the name of the method to call on the view
    @param eventWalker an instance of a walker used to find the closest action or view element
    */
-    setupCaptureHandler(viewRegistry, rootElement, event, eventName, eventWalker) {
+  setupCaptureHandler(viewRegistry, rootElement, event, eventName, eventWalker) {
     let self = this;
 
     function didFindId(evt, triggeringManager, handlers) {
@@ -340,7 +340,7 @@ export default Object.extend({
       }
     }
 
-    let filterFn = filterCaptureFunction(didFindId, didFindAction, eventWalker);
+    let filterFn = filterCaptureFunction(didFindId, didFindAction, eventWalker, this.get('useFastPaths'));
     this._handlers.push({ event: event, method: filterFn });
     rootElement.addEventListener(event, filterFn, true);
   },
@@ -399,7 +399,7 @@ export default Object.extend({
 
 
 
-function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
+function filterCaptureFunction(eventName, idHandler, actionHandler, walker, useFastPaths) {
   return function(e) {
     // normalize the event object
     // this also let's us set currentTarget correctly
