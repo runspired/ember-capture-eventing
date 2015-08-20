@@ -281,17 +281,10 @@ export default Object.extend({
     function didFindId(evt, handlers) {
       let view = viewRegistry[this.id];
 
-      var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
-
       // collect handler
-      if (handlers) {
-        // TODO this logic needs pulled out of _dispatchEvent and _bubbleEvent
-        // TODO and we should collect the actual handler, not just the element
-        if (manager[eventName] && typeof manager[eventName] === 'function') {
-          handlers.push(['id', this]);
-        } else if (view.has(eventName)) {
-          handlers.push(['id', this]);
-        }
+      if (view.has(eventName)) {
+        // TODO this should collect the actual handler instead
+        handlers.push(['id', this]);
       }
 
       return view ? self._bubbleEvent(view, evt, eventName) : true;
@@ -311,13 +304,10 @@ export default Object.extend({
       for (let index = 0, length = actions.length; index < length; index++) {
         let action = actions[index];
 
+        // collect handler
         if (action && action.eventName === eventName) {
-          // collect handler
           // TODO this should collect the actual handler instead
-          if (handlers) {
-            handlers.push(['action', this]);
-          }
-
+          handlers.push(['action', this]);
           return action.handler(evt);
         }
       }
