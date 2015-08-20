@@ -1,5 +1,7 @@
 /*global self, Element, window, document*/
 (function() {
+
+  // using self instead of window enables this polyfill to work for Workers too
   var addEventListener = self.addEventListener;
   var removeEventListener = self.removeEventListener;
 
