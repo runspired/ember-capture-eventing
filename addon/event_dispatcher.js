@@ -19,6 +19,7 @@ const {
 // PLEASE, if you are reading this code, DONT duplicate this hack :)
 // This is only here so that we can test this event model prior to it landing in Ember proper.
 const ActionManager = Ember.__loader.require('ember-views/system/action_manager')['default'];
+const HANDLER_SYMBOL = symbol('EVENT_HANDLER');
 
 /**
  `Ember.EventDispatcher` handles delegating browser events to their
@@ -388,12 +389,13 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
     let event = jQuery.event.fix(e);
 
     let element = event.target;
-    let result;
+    let result = true;
     let handlers;
+    let eventHandlers = handlersFor(element);
 
     // trigger from cached handlers
-    if (element._handlers && element._handlers[eventName]) {
-      element._handlers[eventName].forEach((handler) => {
+    if (eventHandlers[eventName]) {
+      eventHandlers[eventName].forEach((handler) => {
         event.currentTarget = handler[1];
       if (handler[0] === 'id') {
         result = idHandler.call(handler[1], event);
@@ -406,8 +408,7 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
     // collect and trigger handlers
   } else {
 
-    element._handlers = element._handlers || {};
-    handlers = element._handlers[eventName] = element._handlers[eventName] || [];
+    handlers = eventHandlers[eventName] = eventHandlers[eventName] || [];
 
     let node;
     do {
@@ -429,6 +430,12 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
 };
 }
 
+function handlersFor(element) {
+  if (!element[HANDLER_SYMBOL]) {
+    element[HANDLER_SYMBOL] = {};
+  }
+  return element[HANDLER_SYMBOL];
+}
 
 function EventWalker(registry) {
   this.registry = registry;
