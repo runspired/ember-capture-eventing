@@ -379,30 +379,43 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
     let event = jQuery.event.fix(e);
 
     let element = event.target;
-    let result = true;
-    let handlers;
+    let node = element;
+    let result;
     let eventHandlers = handlersFor(element);
+    let handlers = eventHandlers[eventName] = eventHandlers[eventName] || [];
 
     // trigger from cached handlers
-    if (eventHandlers[eventName]) {
-      eventHandlers[eventName].forEach((handler) => {
-        event.currentTarget = handler[1];
-      if (handler[0] === 'id') {
-        result = idHandler.call(handler[1], event);
-      } else {
-        result = actionHandler.call(handler[1], event);
+    if (handlers.length) {
+      for(let i = 0; i < handlers; i++) {
+        let handler = handlers[i];
+        event.currentTarget = node = handler[1];
+        if (handler[0] === 'id') {
+          result = idHandler.call(handler[1], event);
+        } else {
+          result = actionHandler.call(handler[1], event);
+        }
+
+        // stop handling if a handler returns false
+        if (result === false) {
+          return false;
+        }
       }
-    });
-    return result;
+
+      // don't resume bubbling if the last handler does not return false
+      if (result === false) {
+        return false;
+      }
+
+      // resume bubbling at the last handler's parent
+      node = node.parentNode;
+    }
+
 
     // collect and trigger handlers
-  } else {
-
     handlers = eventHandlers[eventName] = eventHandlers[eventName] || [];
 
-    let node;
     do {
-      node = walker.closest(element);
+      node = walker.closest(node);
       if (node) {
         event.currentTarget = node[1];
         if (node[0] === 'id') {
@@ -417,7 +430,7 @@ function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
     } while (result && node);
     return result;
   }
-};
+
 }
 
 function handlersFor(element) {
